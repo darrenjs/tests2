@@ -1,0 +1,372 @@
+HOWTO Emacs
+===========
+
+Set emacs font
+--------------
+
+Overall setting the fonts for a particular X application to use my
+preferred fixed 13 point font feels like a black art. I am currently
+still at the stage of compiling a list of techniques which have
+work. Perhaps later I will really understand what is going on!
+
+(1) Don't have font setting in the .emacs file. Limit settings there to
+    colour choices etc.
+
+(2) Edit ~/.Xdefaults (create it if not present)
+
+(3) Add the following line
+
+  emacs.font: -misc-fixed-medium-r-semicondensed--13-*-*-*-c-60-iso8859-1
+
+(4) Load this into the X server resource database,
+
+    > xrdb -load ~/.Xdefaults
+
+(4) Or alternatively, start emacs with the --font option, providing the
+    name of the font (as written about) after the --font option.
+
+* For a list of font, use the command
+
+  > xlsfonts
+
+* If .Xdefaults doesn't work, try .Xresources instead.
+
+An alternative approach
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Add the following to your .emacs file:
+
+(custom-set-faces
+  ;; custom-set-faces was added by Custom -- don't edit or cut/paste it!
+  ;; Your init file should contain only one such instance.
+ '(default ((t (:stipple nil :background "black" :foreground "Wheat" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width semi-condensed :family "misc-fixed"))))
+ '(highlight ((((class color) (background dark)) (:background "DarkSlateBlue"))))
+ '(menu ((((type x-toolkit)) (:weight normal :width semi-condensed :family "fixed"))))
+ '(show-ws-spaces ((t nil)))
+ '(show-ws-tabs ((((class color)) nil)))
+ '(show-ws-unbr-spaces ((((class color)) nil))))
+
+
+Byte Compile the .emacs File
+---------------------------------
+
+(1) Open emacs
+
+(2) Enter the command "byte-compile-file"
+
+(3) When prompted, enter the location of your .emacs file
+
+(4) A .emacs.elc file will be produced. Place this in your home directory
+
+
+Build Emacs from Source
+----------------------------
+
+Always use the most current version of emacs, and fully understand its
+installation by building your own emacs - i.e. compile from source.
+Emacs has hardly any dependencies.  It is one of the easiest programs to
+build.  Install it into /opt/emacs/VERSION
+
+Recommended Lisp Packages
+----------------------------------
+
+
+Setting my Favourite 8x13 Font
+------------------------------------
+
+There are several method to attempt to get this working.
+
+The preferred method is to start emacs with via an alias which also sets
+other parameters:
+
+  WARNING: !!! the alias command should all be on a single line !!!
+
+  alias x="emacs  --line-spacing 0  --geometry 80x50+0+0  --font  -misc-fixed-medium-r-semicondensed--13-*-*-*-c-60-iso8859-1  --xrm 'Emacs.menuBar: 0' "
+
+Also try creating a .Xresources file with the following entries:
+
+  emacs*geometry: 80x50+0+0
+  emacs*Font: -misc-fixed-medium-r-semicondensed--13-*-*-*-c-60-iso8859-1
+  emacs*menuBar: 0
+
+In the .emacs file, include:
+
+  (custom-set-faces
+    ;; custom-set-faces was added by Custom -- don't edit or cut/paste it!
+    ;; Your init file should contain only one such instance.
+   '(default ((t (:stipple nil :background "black" :foreground "Wheat" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width semi-condensed :family "misc-fixed"))))
+   '(highlight ((((class color) (background dark)) (:background "DarkSlateBlue"))))
+   '(menu ((((type x-toolkit)) (:weight normal :width semi-condensed :family "fixed"))))
+   '(show-ws-spaces ((t nil)))
+   '(show-ws-tabs ((((class color)) nil)))
+   '(show-ws-unbr-spaces ((((class color)) nil))))
+
+
+Start Emacs Without Any Initialisation Files
+--------------------------------------------
+
+This is useful for using 'raw' emacs:
+
+    > emacs -q
+
+Using UTF-8 with Emacs
+----------------------
+
+    Entering accented characters and symbols
+    ----------------------------------------
+
+    Press "C-\". The characters "1>" should appear in the right-hand
+    side of the mode line. Next type in an accent, e.g., "'", followed
+    by a character. The accented character should appear in the buffer.
+
+    Note that the "1>" mode line indicator signifies the
+    "latin-1-prefix" input-method is in effect.  There are other kinds
+    of input methods. Enter the emacs command "set-input-method" and
+    then press TAB to see the range of possibilities. For instance,
+    another input-method is "spanish-postfix". To get help on a
+    particular input-method type "C-h I"
+
+    Choosing a coding system manually
+    ---------------------------------
+
+    Type "C-x <RETURN> c" then enter a coding system when prompted (eg
+    utf-8) and then type the next command (typically "C-x C-f").
+
+    Alternatively, to change the encoding system of the current buffer,
+    use "C-x C-m f" ("set-buffer-file-coding-system"). To see a list of
+    possible coding systems use M-x "list-coding-systems".
+
+    Automatically detecting a multi-byte file encoding
+    --------------------------------------------------
+
+    By default emacs doesn't seem to detect the encoding of a file. E.g,
+    when I load a file that has previously been saved in the
+    "mule-utf-8-unix" encoding, the utf-8 mode isn't enabled.  To get
+    around this, before running the file enter the command
+    "prefer-coding-system" and enter the mode "mule-utf-8-unix" when
+    prompted. Now when loading text files, they will default to this
+    mode.
+
+
+    Various coding systems:
+
+    * Latin 1 (ISO 8859-1) - this is the standard 8 byte system. The
+      mode line will contain "1:" to indicate this mode. To see this in
+      action, start emacs, create an new buffer, and then enter the
+      character "ö" (using any input method, such as copy-past, or even
+      iso-accents-mode). As soon as the character is entered, the "1:"
+      should appear in the mode-line.
+
+    * UTF-8
+
+
+
+
+
+
+
+
+Start emacs with lisp evaluation
+--------------------------------
+
+E.g. to load a file and move to the end, do:
+
+  > emacs --execute '(goto-line (point-max))'
+
+
+Load file at jump to line number
+--------------------------------
+
+There is a built in command line argument for this:
+
+  > emacs +NNN FILE
+
+
+Replace newline characters
+--------------------------
+
+In Emacs, if you have some text like
+
+This is one.
+Example of what.
+I mean.
+
+and you want to replace the “.” plus the following return with a space in order to get
+
+This is one Example of what I mean
+
+you can do it with “Alt-x” (press the “alt” key near the space bar) then type
+“query-replace” and then at the “Query-replace:” prompt, type Control-q (hold
+the “control” key down and press Q) and then Control-j (hold the control key
+down and press J), then type a “.” and then press the “Enter” key and press it
+again at the “With:” prompt. Emacs will replace the line ending characters and
+the dots with nothing.
+
+Defining Emacs Macros
+---------------------
+
+(1) Begin by pressing "C-x ("
+
+(2) Now type in the keystrokes
+
+(3) End macro recording with "C-x )"
+
+(5) Now execute the macro with "C-x e"
+
+Note, it can be useful to repeat a macro by pressing ESCAPE followed by
+a number, followed by "C-x e"
+
+----------------------------------------------------------------------
+Using Tags With Emacs
+---------------------
+
+1. Generate the TAGS file. For many files in recursive directories use:
+
+   >  find . -name "*.[chCH]" -print | etags -a TAGS -
+
+
+At Credit Suisse
+----------------
+
+----
+#!/bin/bash
+
+TAGS=~/TAGS
+
+# truncate existing file
+> $TAGS
+
+xi_dirlist="limit config etseurex ouchei mux common baseei"
+
+for dir in $xi_dirlist
+do
+  echo building tags for in ~/Xi/${dir}
+  find ~/Xi/$dir \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \) -print | etags -a --members -o $TAGS -
+
+done
+----
+
+
+
+Specifically For A4 Project
+---------------------------
+
+1. Go to the base directory:
+
+  >  cd  /home/smithdae/my_tree/links/A4/src
+  >  rm -f ./TAGS
+
+2. Build the TAGS file for various directories:
+
+
+  >  find lib \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \) -print | etags -a --members -o TAGS -
+  >  find app \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \) -print | etags -a --members -o TAGS -
+  >  find util \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \) -print | etags -a --members -o TAGS -
+
+
+3. Load the file into emacs
+
+  (visit-tags-table "~/TAGS")
+
+4. Note, a useful emacs command to use with tags is:
+
+     tags-apropos
+       Command: Display list of all tags in tags table REGEXP matches.
+
+
+At Morgan Stanley I used this sort of script
+--------------------------------------------
+
+#!/bin/bash
+
+base='/ms/dev/mktdata/'
+
+# List of MDCO group dirs
+dir_list="euronextvadd/3.0 msf_client/0.5 euronext_parser/0.3 euronextrdr/3.1 lifferdr/4.7"
+
+TAGS_FILE="TAGS"
+
+echo "tags for $dir_list"
+for dir in $dir_list
+do
+  find $base$dir  -follow -noleaf  -maxdepth 3 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)   | etags -a --members -o ${TAGS_FILE} -
+done
+
+
+# ----- Add in rtdev_utils -----
+
+VERSION=4.4.6
+
+base_dir="/ms/dist/mktdata/PROJ/rtdev_utils/${VERSION}/common/include"
+
+echo "tags for rtdev_utils ${VERSION} ..."
+find $base_dir  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \) | etags -a --members -o ${TAGS_FILE} -
+
+# ----- Add in rtdev_calcs -----
+
+VERSION=4.4.04
+
+base_dir="/ms/dist/mktdata/PROJ/rtdev_calcs/${VERSION}/common/include"
+
+echo "tags for rtdev_calcs ${VERSION} ..."
+find $base_dir  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \) | etags -a --members -o ${TAGS_FILE} -
+
+# ----- Add in refTableMaint -----
+
+VERSION="incr"
+base_dir="/ms/dist/mktdata/PROJ/refTableMaint/${VERSION}/common/include"
+
+echo "tags for refTableMaint ${VERSION} ..."
+find $base_dir  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)  | etags -a --members -o ${TAGS_FILE} -
+
+# ----- Add in MSParts -----
+
+VERSION="4.0"
+
+base_dir="/ms/dist/mstk/PROJ/msparts/${VERSION}/common/include"
+
+echo "tags for MSParts ${VERSION} ..."
+find $base_dir  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)  | etags -a --members -o ${TAGS_FILE} -
+
+# ----- Add in camtk -----
+
+VERSION="2.0"
+
+BASE_DIR="/ms/dist/mstk/PROJ/camtk/${VERSION}/common/include"
+
+echo "tags for camtk ${VERSION} ..."
+find $BASE_DIR  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)  | etags -a --members -o ${TAGS_FILE} -
+
+# ----- Add in camcpp -----
+
+VERSION="2.0.0"
+
+BASE_DIR="/ms/dist/appmw/PROJ/camcpp/${VERSION}/common/include"
+
+echo "tags for camcpp ${VERSION} ..."
+find $BASE_DIR  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)   | etags -a --members -o ${TAGS_FILE} -
+
+# ----- Add in oc -----
+
+VERSION="12.5.1"
+TARGET="ia32.linux.2.4.glibc.2.3"
+
+BASE_DIR="/ms/dist/syb/PROJ/oc/${VERSION}/.exec/${TARGET}/include"
+
+echo "tags for oc ${VERSION} ..."
+find $BASE_DIR  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)   | etags -a --members -o ${TAGS_FILE} -
+
+
+# ----- Add in RougeWave -----
+
+VERSION="6.0"
+TARGET="ia32.linux.2.4.glibc.2.3"
+
+BASE_DIR="/ms/dist/3rd/PROJ/RWSourcePro/${VERSION}/.exec/${TARGET}/include"
+
+echo "tags for RougeWave ${VERSION} ..."
+find $BASE_DIR  -follow -noleaf  -maxdepth 5 \( -regex ".*\.[cChH][cChH]?[pP]?[pP]?" -or -iname *.inl \)   | etags -a --members -o ${TAGS_FILE} -
+
+
+
+----------------------------------------------------------------------

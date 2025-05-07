@@ -1,0 +1,164 @@
+HOWTO build emacs
+=================
+
+emacs 30.1
+==========
+
+ver=30.1
+cd ~/downloads
+wget https://ftp.gnu.org/gnu/emacs/emacs-${ver?}.tar.gz
+install_dir=/home/HOME/opt/emacs-${ver?}
+mkdir build_emacs_${ver?}
+mv emacs-${ver?}.tar.gz  build_emacs_${ver?}
+cd build_emacs_${ver?}
+tar xvfz emacs-${ver?}.tar.gz
+cd emacs-${ver?}
+
+-with-tree-sitter --with-native-compilation
+
+
+./configure --prefix=${install_dir?}  --with-jpeg=ifavailable \
+--with-png=ifavailable --with-gif=ifavailable --with-tiff=ifavailable \
+--with-x-toolkit=gtk3 --with-native-compilation --with-tree-sitter
+
+# ./emacs-30.1/configure --prefix=${install_dir?}  --with-jpeg=ifavailable --with-png=ifavailable --with-gif=ifavailable --with-tiff=ifavailable --with-x-toolkit=gtk3 --with-xft --without-cairo
+
+nice make -j 8
+make install
+
+emacs 29.4
+==========
+
+install_dir=/home/HOME/opt/emacs-29.4
+
+./emacs-29.4/configure --prefix=${install_dir?}  --with-jpeg=ifavailable --with-png=ifavailable --with-gif=ifavailable --with-tiff=ifavailable --with-x-toolkit=gtk3 --with-xft --without-cairo
+
+./emacs-29.4/configure --prefix=${install_dir?}  --with-jpeg=ifavailable --with-png=ifavailable --with-gif=ifavailable --with-tiff=ifavailable --with-x-toolkit=athena --with-xft
+
+
+emacs 29.1
+==========
+
+On ubuntu, here are prerequisites
+
+    sudo apt install libx11-dev
+    sudo apt-get install -y gnutls-dev
+    sudo apt-get install libxaw7-dev
+    sudo apt install libgtk-3-dev
+
+
+$src_dir/emacs-${ver}/configure --prefix=$install_dir  --with-jpeg=ifavailable --with-png=ifavailable --with-gif=ifavailable --with-tiff=ifavailable  --with-x-toolkit=gtk3
+
+
+emacs 26.3
+==========
+
+Generally want to make sure we build with gnutls and some sort of X toolkit.
+For the latter, will really need to have the default packages installed, since
+these are nightmare to build and install manually. Aim for `gtk3`.
+
+## Dependencies
+
+### centos
+
+yum install gnutls-devel
+yum install gtk3-devel
+yum install ncurses-devel
+
+
+### ubuntu
+
+For TLS support: libgnutls28-dev, gnutls-bin, libncurses5-dev , pkgconf,
+For GTK3 support: libgtk-3-dev
+
+
+## Recipe
+
+ver=29.1
+#ver=25.3
+url=http://ftp.wayne.edu/gnu/emacs/emacs-${ver}.tar.gz
+
+# define locations
+install_dir=${HOME}/opt/emacs-${ver}
+src_dir=/var/tmp/$(whoami)/emacs-${ver}/src
+build_dir=/var/tmp/$(whoami)/emacs-${ver}/build
+
+# create
+mkdir -p $build_dir $src_dir
+
+# obtain source
+cd  $src_dir
+wget $url
+tar xfz *.tar.gz
+
+# configuration
+cd $build_dir
+#$src_dir/emacs-${ver}/configure --prefix=$install_dir --with-gif=no --with-tiff=no --without-xaw3d --with-png=no --with-jpeg=no --with-xpm=no --with-x-toolkit=no
+$src_dir/emacs-${ver}/configure --prefix=$install_dir --with-gif=no --with-tiff=no --without-xaw3d --with-png=no --with-jpeg=no --with-xpm=no --without-libsystemd --with-x-toolkit=gtk3
+
+$src_dir/emacs-${ver}/configure --prefix=$install_dir --without-x
+
+
+# --without-toolkit-scroll-bars
+
+# compile
+make -j 2
+
+# install
+make install
+
+# activate script  (needs .sh extension)
+cat > $install_dir/activate.sh << EOF
+export PATH=$install_dir/bin:\$PATH
+export MANPATH=$install_dir/share/man:\$MANPATH
+export INFOPATH=$install_dir/share/info:\$INFOPATH
+EOF
+chmod 444 $install_dir/activate.sh
+
+
+## Problems
+
+For emacs 26.3, I did have an initial problem on linux in that gnutls has not
+there. So can always attempt to build that.
+
+### Nettle
+
+* straight forward to build
+* delete the shared libraries
+
+### gnutls
+
+Needs to find nettle, which is does via environment variables
+
+export NETTLE_CFLAGS=-I/home/HOME/opt/nettle-3.6/include
+export NETTLE_LIBS="-L/home/HOME/opt/nettle-3.6/lib -lnettle"
+
+export HOGWEED_CFLAGS=-I/home/HOME/opt/nettle-3.6/include
+export HOGWEED_LIBS="-L/home/HOME/opt/nettle-3.6/lib -lhogweed -lgmp"
+
+
+
+Emacs 24.5
+==========
+
+basedir=/home/HOME/opt/emacs-24.5
+zipfile=/home/HOME/opt/emacs-24.5/emacs-24.5.tar.gz
+
+
+mkdir -p $basedir %% cd $basedir
+tar xfz $zipfile
+ln -snf emacs-24.5 src
+mkdir build
+cd build
+
+../src/configure --prefix=$basedir --with-gif=no --with-tiff=no --without-xaw3d --with-png=no --with-jpeg=no --with-xpm=no --with-x-toolkit=gtk2
+
+make
+make install
+
+cat > $basedir/env.sh << EOF
+export PATH=$basedir/bin:\$PATH
+export MANPATH=$basedir/share/man:\$MANPATH
+export INFOPATH=$basedir/share/info:\$INFOPATH
+EOF
+chmod 444 $basedir/env.sh

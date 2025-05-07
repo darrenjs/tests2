@@ -1,0 +1,69 @@
+#+Title: Emacs
+
+* MINI HOWTOS
+
+** Insert any UTF char
+
+Use M-x  =insert-char=
+
+** Set C Coding Style In Emacs
+
+In a programming mode, issue the command
+
+   c-set-style
+
+Possible completions are:
+
+  bsd
+  cc-mode
+  ellemtel
+  gnu           <--- default style
+  java
+  k&r
+  linux         <--- C coding standard for Linux development.
+  python        <--- C coding standard for Python extension modules
+
+  stroustrup    <--- USE THIS?
+
+  user
+  whitesmitht
+
+* THINGS TO INSTALL
+
+https://github.com/emacs-vs/goto-line-preview/tree/master
+
+* LINKS
+
+** High level guides
+
+https://github.com/emacs-tw/awesome-emacs?tab=readme-ov-file#switching
+
+** Blogs
+
+https://olddeuteronomy.github.io/
+
+
+** Org Mode
+
+https://orgmode.org/manual/Images.html
+https://www.reddit.com/r/emacs/comments/vvsbrm/simple_inline_images_in_orgmode/
+https://github.com/nobiot/Zero-to-Emacs-and-Org-roam/blob/v1/115.How-to-enable-insert-image-from-clipboard.md
+** C++ IDE
+https://olddeuteronomy.github.io/post/cpp-programming-in-emacs/ (2025)
+https://nilsdeppe.com/posts/emacs-c++-ide2 (December 27, 2017)
+
+** Jumping around in a file
+
+https://emacs.stackexchange.com/questions/64443/how-to-memorise-the-cursor-position-and-return-to-it
+** Emacs & GDB
+
+- https://nurpax.github.io/posts/2014-10-12-fixing-gdb-many-windows-source-buffer.html
+
+** Compilation mode improvements
+
+- https://github.com/zenitani/elisp/blob/master/smart-compile.el
+
+
+** Text expansion
+
+https://www.reddit.com/r/emacs/comments/us51if/please_tell_me_about_the_different_approaches_to/

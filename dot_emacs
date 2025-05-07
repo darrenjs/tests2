@@ -1,0 +1,1088 @@
+
+;; ======================================================================
+;; TIPS
+;; ======================================================================
+
+
+;; To start a clean emacs from a new configuration file:
+
+;;    emacs -q -l init.el
+
+
+;; Use (setq ...) to set value locally to a buffer.
+;; Use (setq-default ...) to set value globally.
+
+;; consider using 'ffap' instead of normal file load, for finding file at point
+
+;; list fonts
+;;(dolist (font (x-list-fonts "*"))
+;;   (insert (format "%s\n" font)))
+
+;; ctrl-x ctrl-e    -- execute selected elisp
+
+;; M-x list-faces-display
+
+
+;; NICE TO HAVE
+
+;; - for org-mode, set line-spacing to 4
+
+;; ======================================================================
+;; package infrastructire
+;; ======================================================================
+
+
+;; Initialize package sources
+(require 'package)
+
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+
+;; (unless package-archive-contents
+;;   (package-refresh-contents))
+
+;; Initialize use-package on non-Linux platforms
+
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;; PATH
+
+; (add-to-list 'load-path (expand-file-name "~/system/elisp"))
+
+
+;; ======================================================================
+;; BASIC CUSTOMISATIONS
+;; ======================================================================
+
+;; hide the startup message
+(setq inhibit-startup-message t)
+
+;; enable/disable various GUI components
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(menu-bar-mode -1)
+(set-fringe-mode 10)
+(setq visual-bell t)
+(setq-default cursor-type 'bar)
+
+;; Show column number in the mode line
+(column-number-mode)
+
+(fset 'yes-or-no-p 'y-or-n-p) ;; changes yes/no questions to y/n
+
+(setq frame-title-format "%b")
+(setq icon-title-format "%b")
+(setq auto-save-list-file-name  nil) ; Don't want any .saves files
+(setq auto-save-default         t) ; Enable auto saving
+(setq search-highlight           t) ; Highlight search object
+(setq query-replace-highlight    t) ; Highlight query object
+(setq mouse-sel-retain-highlight t) ; Keep mouse high-lightening
+(global-auto-revert-mode  1)
+
+
+;; Enable backup files. Uncomment to disable all backups
+(setq make-backup-files nil)
+
+;; In every buffer, the line which contains the cursor will be fully
+;; highlighted
+(global-hl-line-mode 1)
+
+;; Delete selected text on typing
+(delete-selection-mode 1)
+
+(recentf-mode 1)
+
+;; TIP: Use C-x C-x to swap the current cursor position with the mark
+(transient-mark-mode t)
+
+;; Auto-fill-mode the the automatic wrapping of lines and insertion of newlines
+;; when the cursor goes over the column limit.  This should actually turn on
+;; auto-fill-mode by default in all major modes. The other way to do this is to
+;; turn on the fill for specific modes via hooks.
+(setq auto-fill-mode 1)
+
+
+;; display-fill-column-indicator-mode
+(global-display-fill-column-indicator-mode 1)
+(setq display-fill-column-indicator-character 9474)
+(setq-default fill-column 80)
+
+(setq default-major-mode 'text-mode)
+
+
+
+;; Disable all beeping.  Usually we don't need this function, since running the
+;; command "xset b off" at a shell, or in the shell's .probile should be
+;; sufficient).  But if all else fails, enable this lisp:
+(setq ring-bell-function (lambda () (message "*beep*")))
+
+
+;; Treat underscore as part of a symbol. By default, if you double click on a
+;; variable_name_with_underscore then the text which gets selected is only a
+;; part of the word, rather than the whole name, because the underscores are
+;; treated as separators. So here we modify the default symbol table to treat
+;; underscore as part of the word.
+(modify-syntax-entry ?_ "w")
+
+(setq initial-major-mode
+      (function (lambda ()
+                  (text-mode)
+                  (turn-on-auto-fill))))
+
+;; .🯅
+
+;; Default coding system, UTF-8
+(set-language-environment "UTF-8")
+
+(global-display-line-numbers-mode t)
+
+;; sees to add a hook to each mode?
+;; beware invokging hooks multiple times
+(dolist (mode '(org-mode-hook
+		term-mode-hook
+		eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0)))
+  )
+
+
+;; prevent ESC key from closing all the windows
+(defadvice keyboard-escape-quit
+    (around keyboard-escape-quit-dont-close-windows activate)
+  (let ((buffer-quit-function (lambda () ())))
+    ad-do-it))
+
+;; ======================================================================
+;;
+;; ======================================================================
+
+;; Emacs normally uses both tabs and spaces to indent lines.  If you prefer, all
+;; indentation can be made from spaces only.  To request this, set
+;; `indent-tabs-mode' to `nil'.  This is a per-buffer variable; altering the
+;; variable affects only the current buffer, but there is a
+(setq-default indent-tabs-mode nil)
+
+(setq default-tab-width 4)
+(setq standard-indent 2)
+
+
+
+
+;; ======================================================================
+;; MINOR PACKAGES
+;; ======================================================================
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+
+;; which key -- not sure how helpful this is
+;; not sure how to navigate around the which key buffer
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+
+(use-package move-text)
+(move-text-default-bindings)
+
+;(use-package display-line-numbers-mode)
+
+
+(use-package lsp-mode)
+
+;; ======================================================================
+;; CUSTOM FUNCTIONS
+;; ======================================================================
+
+; Taken from the EmacsWiki
+(defun count-words (start end)
+  "Print number of words in the region."
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region start end)
+      (goto-char (point-min))
+      (count-matches "\\sw+"))))
+
+(defalias 'word-count 'count-words)
+
+
+
+;; This can be bound to a key, such as Alt F2 so that we can easily
+;; display the file name underlying the current buffer.
+
+(defun display-buffer-filename ()
+  "Display the file name of the current buffer."
+  (interactive )
+  (message buffer-file-name))
+
+
+(defun match-paren (arg)
+  "Go to the matching paren if on a paren; otherwise insert %."
+  (interactive "p")
+  (cond ((looking-at "\\s\(") (forward-list 1) (backward-char 1))
+        ((looking-at "\\s\)") (forward-char 1) (backward-list 1))
+        (t (self-insert-command (or arg 1)))))
+(global-set-key "%" 'match-paren)
+
+
+
+; 20171026 -- new appraoch, instead of tidy-save()  -- move to minor customisations
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+; Function to create a new buffer
+(defun new-buffer()
+  "Ceate a new buffer"
+  (interactive)
+  (let ((buf (generate-new-buffer-name "new")))
+    (generate-new-buffer buf)
+    (switch-to-buffer buf)
+    )
+  )
+
+(defun python-add-breakpoint ()
+  "Insert python breakpoint."
+  (interactive)
+  (insert "import ipdb; ipdb.set_trace(); # TODO: DELETE ME"))
+
+
+; I've updated the orignally lisp function by Andy Sawyer.  I've added two
+; approaches to copying the text into the clipboard.  First we use
+; 'x-select-text' to copy into the X11 SECONDARY clipboard, and also use
+; 'x-set-selection' to copy in the X11 PRIMARY clipboard.
+
+(defun gdb-pos()
+  (interactive)
+  (let ((buf (format "%s:%d"
+                     (file-name-nondirectory (buffer-file-name))
+                     (line-number-at-pos)
+                     )))
+    (message buf)
+    (x-select-text buf)
+    (x-set-selection nil buf)
+    )
+  )
+
+
+; This is a great little function.  Press '%' to jump from one
+; parenthesis to its partner (and press again to jump back). Inspired by
+; the vi editor.
+
+(defun match-paren (arg)
+  "Go to the matching paren if on a paren; otherwise insert %."
+  (interactive "p")
+  (cond ((looking-at "\\s\(") (forward-list 1) (backward-char 1))
+        ((looking-at "\\s\)") (forward-char 1) (backward-list 1))
+        (t (self-insert-command (or arg 1)))))
+
+;; Define the nuke-line function. The line is killed, then the newline
+;; character is deleted. The column which the cursor was positioned at is then
+;; restored. Because the kill-line function is used, the contents deleted can
+;; be later restored by usibackward-delete-char-untabifyng the yank commands.
+(defun nuke-line()
+  "Kill an entire line, including the trailing newline character"
+  (interactive)
+
+  ;; Store the current column position, so it can later be restored for a more
+  ;; natural feel to the deletion
+  (setq previous-column (current-column))
+
+  ;; Now move to the end of the current line
+  (end-of-line)
+
+  ;; Test the length of the line. If it is 0, there is no need for a
+  ;; kill-line. All that happens in this case is that the new-line character
+  ;; is deleted.
+  (if (= (current-column) 0)
+      (delete-char 1)
+
+    ;; This is the 'else' clause. The current line being deleted is not zero
+    ;; in length. First remove the line by moving to its start and then
+    ;; killing, followed by deletion of the newline character, and then
+    ;; finally restoration of the column position.
+    (progn
+      (beginning-of-line)
+      (kill-line)
+      (delete-char 1)
+      (move-to-column previous-column))))
+
+
+(defvar duplicate-start nil
+  "Used for line duplication")
+
+;; Make a copy of the current line and paste into buffer
+(defun duplicate-line()
+  "Make a copy of the current line"
+  (interactive)
+
+  ;; Store the current column position, so it can later be restored for a more
+  ;; natural feel to the deletion
+  (setq previous-column (current-column))
+  (beginning-of-line)
+  (setq duplicate-start (point))
+  (end-of-line)
+  (copy-region-as-kill duplicate-start (point))
+  (newline)
+  (yank)
+  (move-to-column previous-column))
+
+(defun quote-region (beg end)
+  "Indent the region to make it look like a quote"
+  (interactive "r")
+  (setq previous-fill-column fill-column)
+  (setq fill-column 60)
+  (comment-region beg end)
+  (fill-region beg end `left' nil nil)
+  (setq fill-column previous-fill-column)
+  )
+
+
+(defun toggle-global-line-numbers ()
+  "Toggle global line numbers on or off."
+  (interactive)
+  (if global-display-line-numbers-mode
+      (global-display-line-numbers-mode -1)
+    (global-display-line-numbers-mode 1)))
+
+(defun toggle-line-numbers ()
+  "Toggle global line numbers on or off."
+  (interactive)
+  (if display-line-numbers-mode
+      (display-line-numbers-mode -1)
+    (display-line-numbers-mode 1)))
+
+
+
+; Functions to insert time, date, and a date-time-stamp
+
+(defvar insert-time-format "%T"
+  "*Format for \\[insert-time] (c.f. 'format-time-string' for how to format).")
+
+(defvar insert-date-format "%d/%m/%y"
+  "*Format for \\[insert-date] (c.f. 'format-time-string' for how to format).")
+
+(defun time ()
+  "Insert the current time according to the variable \"insert-time-format\"."
+  (interactive "*")
+  (insert (format-time-string insert-time-format
+                              (current-time))))
+
+(defun date ()
+  "Insert the current date according to the variable \"insert-date-format\"."
+  (interactive "*")
+  (insert (format-time-string insert-date-format
+                              (current-time))))
+
+(defun now ()
+  "Insert current date and time."
+  (interactive "*")
+  (insert (current-time-string)))
+
+(defun xxnewday ()
+  "Insert the current date according to the variable \"insert-date-format\"."
+  (interactive "*")
+  (insert
+   "======================================================================"
+   "\n"
+   (format-time-string
+    insert-date-format
+    (current-time)
+    )
+   "\n\n"
+   )
+  )
+
+;; ======================================================================
+;; C++
+;; ======================================================================
+
+;; Provide customisations to the default Java and C/C++ styles.
+;;
+;; Here the main change are really to alter the default settings of the
+;; indentation.  E.g., be default, in the java-mode, the { brace
+;; following an if/while/for block is indented.
+;;
+;; To make this change, and others like it,we need to set some
+;; parameters in the c-offset-alist variable.  If you open emacs and run
+;; the command "describe-variable" and then enter "c-offset-alist", you
+;; can scroll down the text that appears to find a list of all the
+;; syntax elements: you will find that "substatement" is the symbol that
+;; controls first line indentin.
+;;
+;; So, to change this variable, we just add a hook and make a call to
+;; (c-set-offset 'substatement-open 0)
+;;
+;; Note that the basic offset unit is determine by the c-basic-offset
+;; value, which has been set earlier.
+;;
+;; During an Emacs session the current indentation style can be found by
+;; doing C-h v for variable "c-indentation-style". At any time in Emacs,
+;; the command "c-set-style" can be invoked to change current
+;; indentation style.
+;;
+
+;; Define a function which will apply customisations to the Java
+;; mode. Current this involves set the indentation style.
+
+(defun java-mode-customizations()
+   (c-set-style "java")
+   (setq c-basic-offset 2)
+   (setq tab-width 2)
+   (c-set-offset 'substatement 2)
+   (c-set-offset 'substatement-open 0)
+   (c-set-offset 'statement-case-intro 0)
+   (c-set-offset 'statement-case-open 0)
+
+   (modify-syntax-entry ?_ "w" )
+   (modify-syntax-entry ?- "w")
+
+   (font-lock-add-keywords nil
+                           '(("\\<\\(true\\|false\\|null\\)" 1 font-lock-keyword-face t)))
+   (font-lock-add-keywords nil
+                           '(("\\<\\(FIXME\\|TODO\\|BUG\\)" 1 font-lock-warning-face t)))
+  )
+;; Register the above function to run when the "java-mode" is entered
+(add-hook 'java-mode-hook 'java-mode-customizations)
+
+;; Define C++ mode customizations - Modify the syntax table so that the
+;; underscore and dash characters are considered word characters. This
+;; is useful so that when I double click on a variable name, the whole
+;; name is selected. By default this does not happen; the selection is
+;; limited to an underscore or dash character, which is a problem
+;; because I often have underscores and dashes in variable names.
+
+(defun c++-mode-customizations()
+  (c-set-style "ellemtel")
+  (setq c-basic-offset 2)
+  (turn-on-font-lock)
+
+  (modify-syntax-entry ?_ "w" )
+  (modify-syntax-entry ?- "w")
+
+  (c-set-offset 'innamespace 0)
+  (font-lock-add-keywords nil
+                          '(("\\<\\(FIXME\\|TODO\\|BUG\\)" 1 font-lock-warning-face t)))
+  )
+
+;; Register the above function to run when C/C++ modes are entered
+(add-hook 'c++-mode-hook 'c++-mode-customizations)
+(add-hook 'c-mode-hook 'c++-mode-customizations)
+
+(add-to-list 'auto-mode-alist
+             (cons (concat "\\." (regexp-opt '("h"
+                                               "inl") t) "\\'")
+                   'c++-mode))
+
+;; enable hide-show mode in all programming languages, so that we can hide/show
+;; braced section using key stroke C-c @ C-c
+(add-hook 'prog-mode-hook (lambda () (hs-minor-mode t)))
+
+
+;; ======================================================================
+;; JAVASCRIPT
+;; ======================================================================
+
+(defun javascript-mode-customizations()
+
+  ;; Allow text lines to be commented out
+  (setq comment-start "// ")
+
+  ;; Turn on automatic fill
+  (auto-fill-mode 1)
+
+  ; Modify the syntax table so that the underscore and dash characters are
+  ; considered word characters. This is useful so that when I double click on a
+  ; variable name, the whole name is selected. By default this does not happen;
+  ; the selection is limited to an underscore or dash character, which is a
+  ; problem because I often have underscores and dashes in variable names. (YES,
+  ; I want this to work in text files as well as in code files)
+  (modify-syntax-entry ?_ "w" )
+  (modify-syntax-entry ?- "w")
+
+  (turn-on-font-lock)
+
+  (font-lock-add-keywords nil
+                          '(("\\<\\(true\\|false\\|null\\)" 1 font-lock-keyword-face t)))
+  (font-lock-add-keywords nil
+                          '(("\\<\\(FIXME\\|TODO\\|BUG\\)" 1 font-lock-warning-face t)))
+  (setq font-lock-defaults
+        '(
+          (
+           ("\"[^\"]+\"" 0 font-lock-string-face)
+           ("p[123456780]+" 0 font-lock-constant-face)
+           ("P[123456780]+" 0 font-lock-constant-face)
+           (":[123456780]+" 0 font-lock-constant-face)
+           ("TRACE" 0 font-lock-warning-face)
+           ("TODO" 0 font-lock-warning-face)
+           ("DONE" 0 font-lock-string-face)
+           ("---[-]+" 0 font-lock-comment-face)
+           ("^\\* " 0 font-lock-comment-face)
+           ("===[=]+" 0 font-lock-constant-face)
+           )
+          nil nil
+          nil
+          mark-paragraph
+          )
+        )
+ )
+
+; NOTE: the javascript mode hook is called 'js-mode-hook'
+(add-hook 'js-mode-hook 'javascript-mode-customizations)
+
+
+;; ======================================================================
+;; GIT MODE
+;; ======================================================================
+
+(use-package git-gutter
+  :hook (prog-mode . git-gutter-mode)
+  :config
+  (setq git-gutter:update-interval 1))
+
+(define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+(define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+(define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
+
+(use-package git-gutter-fringe)
+
+
+;; ======================================================================
+;; ORG MODE
+;; ======================================================================
+
+(use-package org-bullets)
+(require 'org-bullets)
+;(setq org-bullets-bullet-list '("α" "β" "✸" "✿" "~"))
+;(setq org-bullets-bullet-list '("●" "•" "◉" "○" "✸" "✿" "~"))
+;(setq org-bullets-bullet-list '("●" "•" "✸" "✿" "~"))
+(setq org-bullets-bullet-list '("⏺" "✸" "•"   "✿" "~"))  ; "🟊" "⭘"
+
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+;; fontify quoted text
+;; (font-lock-add-keywords 'org-mode '(
+;;   ("Herbert" 'org-warning)
+;;   ("Caesar" 'org-warning)
+;;   ("\"[^\"]*\"" . 'org-verse)
+;;   ("«[^»]*»" . 'org-ellipsis)
+;; ))
+
+;; at startup show me just the outline
+(setq org-startup-folded 'content)
+
+;(setq org-src-fontify-natively t)
+(setq org-export-htmlize-output-type "css")
+
+(setq-default prettify-symbols-alist
+              '(
+                ("#+BEGIN_SRC"    . ?»)
+                ("#+END_SRC"      . ?«)
+                ("#+begin_src"    . ?»)
+                ("#+end_src"      . ?«)
+                ))
+
+(add-hook 'org-mode-hook 'prettify-symbols-mode)
+
+;; fontify code in code blocks
+(setq org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-edit-src-content-indentation 0)
+
+(custom-theme-set-faces
+ 'user
+ '(org-block ((t (:inherit fixed-pitch))))
+ '(org-code ((t (:inherit (shadow fixed-pitch)))))
+ '(org-document-info ((t (:foreground "dark orange"))))
+ '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+ '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
+ '(org-link ((t (:foreground "royal blue" :underline t))))
+ '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+ '(org-property-value ((t (:inherit fixed-pitch))) t)
+ '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+ '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
+ '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+ '(org-verbatim ((t (:inherit (shadow fixed-pitch))))))
+
+;; this allows the emphasis chars to appear when cursor is over them
+(use-package org-appear
+  :commands (org-appear-mode)
+  :hook     (org-mode . org-appear-mode)
+  :config
+  (setq org-hide-emphasis-markers t)  ; Must be activated for org-appear to work
+  (setq org-appear-autoemphasis   t   ; Show bold, italics, verbatim, etc.
+        org-appear-autolinks      t   ; Show links
+	org-appear-autosubmarkers t)) ; Show sub- and superscripts
+
+;; I want org-mode to allow me to expand ```c++ into a code block, but to do that
+;; we need to allow ` and + to be recognised by abbrev-mode syntax.
+(defun my-abbrev-symbol-setup ()
+  "Make backtick ` a word constituent for abbrev expansion."
+  (modify-syntax-entry ?\` "w") ;; `w` means "word constituent"
+  (modify-syntax-entry ?\+ "w")
+  )
+
+(add-hook 'org-mode-hook #'my-abbrev-symbol-setup)
+
+;; font sizes
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-block ((t (:inherit fixed-pitch))))
+ '(org-code ((t (:inherit (shadow fixed-pitch)))))
+ '(org-document-info ((t (:foreground "dark orange"))))
+ '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+ '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
+ '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.15))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.1))))
+ '(org-level-4 ((t (:inherit outline-4 :height 1.0))))
+ '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+ '(org-link ((t (:foreground "royal blue" :underline t))))
+ '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+ '(org-property-value ((t (:inherit fixed-pitch))))
+ '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+ '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
+ '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+ '(org-verbatim ((t (:inherit (shadow fixed-pitch))))))
+
+
+;; ======================================================================
+;; TEXT MODE
+;; ======================================================================
+
+
+;; Make the following customizations when in the text mode. This is done by
+;; attaching a hook to the function text-mode-customizations() - this function
+;; is called when the text-mode is activated
+
+(add-hook 'text-mode-hook 'text-mode-customizations)
+
+(defun text-mode-customizations()
+
+  ;; Allow text lines to be commented out
+  (setq comment-start "| ")
+
+  ;; Turn on automatic fill
+  (auto-fill-mode 1)
+
+ ; Modify the syntax table so that the underscore and dash characters
+ ; are considered word characters. This is useful so that when I double
+ ; click on a variable name, the whole name is selected. By default
+ ; this does not happen; the selection is limited to an underscore or
+ ; dash character, which is a problem because I often have underscores
+ ; and dashes in variable names. (YES, I want this to work in text
+ ; files as well as in code files)
+  (modify-syntax-entry ?_ "w" )
+  (modify-syntax-entry ?- "w")
+  (turn-on-font-lock)
+
+  (setq font-lock-defaults
+        '(
+          (
+           ("\"[^\"]+\"" 0 font-lock-string-face)
+           ("p[123456780]+" 0 font-lock-constant-face)
+           ("P[123456780]+" 0 font-lock-constant-face)
+           (":[123456780]+" 0 font-lock-constant-face)
+           ("TRACE" 0 font-lock-warning-face)
+           ("TODO" 0 font-lock-warning-face)
+           ("DONE" 0 font-lock-string-face)
+           ("---[-]+" 0 font-lock-comment-face)
+           ("^\\* " 0 font-lock-comment-face)
+           ("===[=]+" 0 font-lock-constant-face)
+           )
+          nil nil
+          nil
+          mark-paragraph
+          )
+        )
+  )
+
+;; ======================================================================
+;; SCROLLING
+;; ======================================================================
+
+;; This makes the buffer scroll by only a single line when the up or
+;; down cursor keys push the cursor (tool-bar-mode) outside the
+;; buffer. The standard emacs behaviour is to reposition the cursor in
+;; the center of the screen, but this can make the scrolling confusing
+
+(setq scroll-step 1)
+
+
+;; Emacs by default will produce an error beep when page-up or page-down force
+;; a scroll to the beginning or end of the buffer. As well as beeping, the
+;; cursor is not moved to the beginning or end of buffer, but is instead left
+;; several lines away.
+;;
+;; This behaviour can be altered to make Emacs more like PC editors which move
+;; the cursor to the beginning or end of the buffer and produce no error beep.
+;;
+;; This is achieved by 'advising' the scroll-down and scroll-up functions. The
+;; code comes from Dave Pearson (harbour@matrixlist.com)
+;;
+;; In both cases the advice code wraps around the function calls so the advice
+;; is responsible for making the code (the `ad-do-it' is the call to the
+;; advises function). The condition case is simply an error trap.
+
+;; (defadvice scroll-down (around full-scroll-down activate)
+;;   "Ensure that `scroll-down' goes right to the start of the buffer."
+;;   (condition-case nil
+;;       ad-do-it
+;;     (beginning-of-buffer (goto-char (point-min)))))
+
+;; (defalias 'scroll-behind 'scroll-down)
+
+;; (defadvice scroll-up (around full-scroll-up activate)
+;;   "Ensure that `scroll-up' goes right to the end of the buffer."
+;;   (condition-case nil
+;;       ad-do-it
+;;     (end-of-buffer (goto-char (point-max)))))
+
+;; (defalias 'scroll-ahead 'scroll-up)
+
+(defun scroll-n-lines-ahead (&optional n)
+  "Scroll ahead N lines (1 by default)."
+  (interactive "P")
+  (scroll-up (prefix-numeric-value n)))
+
+(defun scroll-n-lines-behind (&optional n)
+  "Scroll behind N lines (1 by default)."
+  (interactive "P")
+  (scroll-down (prefix-numeric-value n)))
+
+;; (defun scroll-fixed-lines-behind ()
+;;   "Scroll behind a fixed amount of lines"
+;;   (interactive)
+;;   (scroll-behind (prefix-numeric-value 3)))
+
+;; (defun scroll-fixed-lines-ahead ()
+;;   "Scroll ahead a fixed amount of lines"
+;;   (interactive)
+;;   (scroll-ahead (prefix-numeric-value 3)))
+
+
+;; ======================================================================
+;; MOUSE SCROLLING
+;; ======================================================================
+
+
+;; (setq-default scroll-conservatively 10000)
+
+; I think scroll-margin controls how close the cursor gets to the top/bottom
+; edge of the frame before triggering a scroll.
+;; (setq-default scroll-margin 3)
+
+;; (setq pixel-scroll-precision-use-momentum t)
+; (setq pixel-scroll-precision-interpolate-mice t)
+;; (setq pixel-scroll-precision-large-scroll-height 10.0)
+;; (setq pixel-scroll-precision-interpolate-page t)
+
+;; I think scroll-margin controls how close the cursor gets to the top/bottom
+;; edge of the frame before triggering a scroll.
+
+(setq-default scroll-margin 0)
+
+(pixel-scroll-precision-mode t)
+;(setq pixel-scroll-precision-large-scroll-height 100.0)
+(setq mouse-wheel-progressive-speed t) ;; don't accelerate scrolling
+(setq pixel-scroll-precision-large-scroll-height 10.0)
+(setq pixel-scroll-precision-interpolation-factor 2)
+(setq pixel-scroll-precision-interpolate-mice t)
+(setq pixel-scroll-precision-use-momentum nil)
+
+
+;; ======================================================================
+;; COMPILATION MODE
+;; ======================================================================
+
+;; scroll
+(setq compilation-scroll-output t)
+
+;; always kill any existing compile
+(setq compilation-always-kill t)
+
+;; Automatically jump to the first error during compilation
+(setq compilation-auto-jump-to-first-error t)
+
+;; don't ask about unsaved files
+(setopt compilation-ask-about-save nil)
+
+
+;; ======================================================================
+;; EMACS SERVER
+;; ======================================================================
+
+;; Run the emacs server in TCP mode, and set the server-host variable to be
+;; the box where emacs is normally started.  This causes emacs to generate a
+;; server-file at path:
+;;
+;;     ~/.emacs.d/server/server
+;;
+;; which in turn we give to emacsclient, so that it can find the emacs server
+;; and authenticate.  I.e., we would start emacsclient (on any host) like:
+;;
+;;     emacsclient --server-file=~/.emacs.d/server/server <LINE> <FILE>
+;;
+
+;(setq server-use-tcp nil)
+;(setq server-host "t480")  ; set your host here
+; (server-start)
+
+
+;; ======================================================================
+;; DESKTOP SAVE
+;; ======================================================================
+
+(setq desktop-path '("/home/HOME/.emacs.d"))
+(desktop-save-mode 1)
+
+
+;; ======================================================================
+;; FONTS
+;; ======================================================================
+
+
+;; to list font families, run at bash
+;;
+;;     $ fc-list : family
+
+;; Nice variable pitch fonts
+;; - Roboto
+;; - Ubuntu Sans
+;; - Verdana
+;; - Rasa
+;; - Noto Serif
+;; - Noto Sans
+
+(defun what-face (pos)
+  (interactive "d")
+  (let ((face (or (get-char-property pos 'read-face-name)
+                  (get-char-property pos 'face))))
+    (if face (message "Face: %s" face) (message "No face at %d" pos))))
+
+
+;; font for mode line
+(set-face-attribute 'mode-line nil :font "DejaVu Sans Mono-10")
+
+(defun font-fixed()
+  (interactive)
+  (set-frame-font "-misc-fixed-medium-r-semicondensed--13-*-*-*-c-*-*-1")
+  )
+
+(defun font-scalar()
+  (interactive)
+  (set-frame-font "hack")
+  (set-face-attribute 'default nil :height 78 :family "hack")
+  )
+
+
+(set-face-attribute 'default nil :height 95 :family "hack")
+
+;; (set-frame-font "juliamono")
+;;(set-frame-font "iosevka")
+
+(set-frame-font "hack")
+;; (set-frame-font "terminus")
+;; (set-frame-font "monospace")
+;; (set-frame-font "dejavu sans mono") minus sign too short
+;; (set-frame-font "go mono")          too much serif
+;; (set-frame-font "inconsolata")      looks blurred
+;; (set-frame-font "ubuntu mono")      minus sign too short
+
+;; (set-frame-font "jet brains mono")
+;; (set-frame-font "noto mono")
+
+
+;; ======================================================================
+;; IDO MODE
+;; ======================================================================
+
+(require 'ido)
+
+(ido-mode 1)
+(setq ido-enable-flex-matching t
+      ido-use-filename-at-point 'guess
+      ido-vertical-define-keys 'C-n-C-p-up-down-left-right)
+(ido-everywhere t)
+;; previous iswitchb
+;;  (iswitchb-mode 1)
+;;  (global-set-key [(control return)] 'iswitchb-buffer)
+
+
+;; ======================================================================
+;; SMEX
+;; ======================================================================
+
+;; Trial of using smex for commend
+
+
+(use-package smex)
+(require 'smex)
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
+
+;; ======================================================================
+;; KEYBOARD SHORTCUTS
+;; ======================================================================
+
+
+;; minor mode to have some keyboard shortcuts available in every mode
+(defvar my-keys-minor-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "\C-c\C-c") 'copy-region-as-kill)
+    (define-key map (kbd "\C-x\C-x") 'kill-region)
+    (define-key map (kbd "\C-v") 'yank)
+    (define-key map [(control return)] 'ido-switch-buffer)
+    (global-set-key "\C-v" 'yank)
+    (global-set-key "\M-r" 'recompile)
+    map)
+  "my-keys-minor-mode keymap.")
+(define-minor-mode my-keys-minor-mode
+  "A minor mode so that my key settings override annoying major modes."
+  :init-value t
+  :lighter " my-keys")
+(my-keys-minor-mode 1)
+
+(global-set-key [(control return)] 'ido-switch-buffer)
+
+(global-set-key [f3] 'find-file)
+
+; font & display
+(global-set-key (kbd "C-x C-8") 'font-fixed)
+(global-set-key (kbd "C-x C-9") 'font-scalar)
+(global-set-key (kbd "C-+") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+(global-set-key (kbd "C-=") 'text-scale-set)
+
+(global-set-key (kbd "C-{") 'hs-toggle-hiding)
+(global-set-key (kbd "C-}") 'hs-toggle-hiding)
+
+
+(global-set-key [M-f3] 'revert-buffer)
+
+(global-set-key [f6] 'comment-region)
+(global-set-key [M-f6] 'uncomment-reghion)
+
+(global-set-key (kbd "C-;") 'duplicate-line)
+(global-set-key [f7] 'duplicate-line)
+(global-set-key [f8] 'nuke-line)
+
+(global-set-key [(XF86Back)] 'scroll-down)
+(global-set-key [(XF86Forward)] 'scroll-up)
+(global-set-key [(control XF86Forward)] 'end-of-buffer )
+(global-set-key [(control XF86Back)] 'beginning-of-buffer)
+
+(global-set-key [(control up)] 'scroll-n-lines-behind)
+(global-set-key [(control down)] 'scroll-n-lines-ahead)
+
+;; The key sequence for fill-paragraph is \M-q so a similar key sequence has
+;; been chosen for fill-region.
+(global-set-key [?\M-Q]       'fill-region)       ;; Meta-Shift-q
+
+(global-set-key [(control \?)] 'display-buffer-filename)
+
+;; highlight symbol
+(global-set-key [f5]           'highlight-symbol-at-point)
+(global-set-key [(control f5)] 'highlight-symbol-next)
+(global-set-key [(shift f5)]   'highlight-symbol-prev)
+(global-set-key [(meta f5)]    'highlight-symbol-prev)
+
+(global-set-key [C-prior] 'beginning-of-buffer) ;Ctrl-PageUp
+(global-set-key [C-next] 'end-of-buffer) ;Ctrl-PageDown
+
+;; Emacs has replace-string and query replace functions, but they are on
+;; awkard keys, so map these here
+(global-set-key [\C-f4] 'query-replace)
+(global-set-key [f4] 'replace-regexp)
+
+;; Quick buffer navigation
+(global-set-key [(control shift up)] 'iswitchb-buffer)
+(global-set-key [(control shift down)] 'joc-toggle-buffer)
+(global-set-key [(control shift left)] 'cyclebuffer-forward)
+(global-set-key [(control shift right)] 'cyclebuffer-backward)
+
+;; Use ibuffer instead of buffer
+(global-set-key "\C-x\C-b" 'ibuffer)
+
+(global-set-key (kbd "C-c <up>") 'windmove-up)
+(global-set-key (kbd "C-c <down>") 'windmove-down)
+(global-set-key (kbd "C-c <right>") 'windmove-right)
+(global-set-key (kbd "C-c <left>") 'windmove-left)
+
+(global-set-key (kbd "C-x <up>") 'windmove-up)
+(global-set-key (kbd "C-x <down>") 'windmove-down)
+(global-set-key (kbd "C-x <right>") 'windmove-right)
+(global-set-key (kbd "C-x <left>") 'windmove-left)
+
+(global-set-key [(meta l)]  'toggle-line-numbers)
+
+
+(global-set-key "%" 'match-paren)
+
+(global-set-key "\C-x\C-n" 'new-buffer)
+
+(global-set-key "\M-g" 'goto-line)
+
+
+;; Make ESC quit prompts
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+
+;; ======================================================================
+;; EXPERIMENTS
+;; ======================================================================
+
+
+(defun unfill-paragraph ()
+  (interactive)
+  (let ((fill-column most-positive-fixnum))
+    (fill-paragraph nil)))
+
+;; ======================================================================
+;; ABBREVIATIONS
+;; ======================================================================
+
+;; Note that emacs chooses, by default, the filename
+;; "~/.abbrev_defs", so don't try to be too clever
+;; by changing its name
+(setq-default abbrev-mode t)
+(read-abbrev-file "~/.abbrev_defs")
+(setq save-abbrevs t)
+
+;; ======================================================================
+;; LOAD EMACS AUTOMATIC CUSTOMISATIONS
+;; ======================================================================
+
+(setq custom-file (concat user-emacs-directory "automatic_custom.el"))
+(load custom-file 'noerror)
+(put 'upcase-region 'disabled nil)
+
+;; ======================================================================
+;; THEME
+;; ======================================================================
+
+;; Put theme loading after the automatic-customisations, since the latter will
+;; bring in the list of elips themes that are approved.
+
+;(load-theme 'darren-light)
+
+
+; Preferred line-number package, as of emacs 27.
+
+
+;; display-fill-column-indicator-mode
+(set-face-foreground 'fill-column-indicator "gray23")
+;; (global-display-fill-column-indicator-mode 1)
+;; (setq display-fill-column-indicator-character 9474)
+;; (setq-default fill-column 80)
